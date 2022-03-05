@@ -67,7 +67,7 @@ func (o *WebScrapper) Scrapper() {
 	o.domain = util.GetDomainByHostName(u.Hostname())
 	// create a anew collector
 	c := colly.NewCollector(
-		colly.MaxDepth(0),
+		colly.MaxDepth(1),
 		colly.Async(true),
 	)
 	// get all the links and segrate
