@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+   <head>
+         <meta charset="UTF-8">
+         <title>Web Scrapper</title>
+   </head>
+   <body>
+      <h2>Title -> {{.Title}}</h2> 
+      <h2>Heading Count </h2> {{range $index, $element := .Heading}}
+       count of {{$index}} tags = {{$element}}</br>
+        {{end}}  
+      <h2>Doc Version -> {{.HTMLVersion}}</h2>
+      <h2>HasLoginForm -> {{.HasLoginForm}}</h2>
+      <h2>ExternalLinks</h2>
+        {{range $index, $element := .LinkGroup.ExternalLinks}}
+        {{$index}} </br>
+        {{end}}
+      <h2>InternalLinks</h2>
+        {{range $index, $element := .LinkGroup.InternalLinks}}
+        {{$index}} </br>
+        {{end}}
+
+        <h2>InaccessibleLinks</h2>
+        {{range $index, $element := .LinkGroup.InaccessibleLinks}}
+        {{$index}} </br>
+        {{end}}  
+    
+     
+   </body>
+</html>
