@@ -67,7 +67,7 @@ func (o *WebScrapper) Scrapper() {
 	o.domain = util.GetDomainByHostName(u.Hostname())
 	// create a anew collector
 	c := colly.NewCollector(
-		colly.MaxDepth(1),
+		colly.MaxDepth(2),
 		colly.Async(true),
 	)
 	// get all the links and segrate
@@ -99,7 +99,10 @@ func (o *WebScrapper) Scrapper() {
 GetLinks This will segregate all the links
 */
 func (o *WebScrapper) GetLinks(e *colly.HTMLElement) {
-	// get title
+	// do not execute for recursive requests
+	if !shouldExecuteHTMLCallBack(e) {
+		return
+	}
 	links := e.ChildAttrs("a", "href")
 	o.LinkGroup.InternalLinks, o.LinkGroup.ExternalLinks = util.LinkSegregator(links, o.domain)
 
@@ -113,7 +116,10 @@ func (o *WebScrapper) GetLinks(e *colly.HTMLElement) {
 GetTitle Get Page title
 */
 func (o *WebScrapper) GetTitle(e *colly.HTMLElement) {
-
+	// do not execute for recursive requests
+	if !shouldExecuteHTMLCallBack(e) {
+		return
+	}
 	o.Title = e.ChildText("Title")
 
 }
@@ -122,7 +128,10 @@ func (o *WebScrapper) GetTitle(e *colly.HTMLElement) {
 GetHTMLVersion  This will fetch the HTML Version of page
 */
 func (o *WebScrapper) GetHTMLVersion(e *colly.HTMLElement) {
-
+	// do not execute for recursive requests
+	if !shouldExecuteHTMLCallBack(e) {
+		return
+	}
 	o.HTMLVersion = util.GetDocVersion(string(e.Response.Body))
 
 }
@@ -131,6 +140,7 @@ func (o *WebScrapper) GetHTMLVersion(e *colly.HTMLElement) {
 GetInAccessibleLinks This function is used as error callback and will store inaccessible links
 */
 func (o *WebScrapper) GetInAccessibleLinks(r *colly.Response, err error) {
+
 	o.LinkGroup.inaccessibleLinkMutex.Lock()
 	o.LinkGroup.InaccessibleLinks[r.Request.URL.String()] = true
 	defer o.LinkGroup.inaccessibleLinkMutex.Unlock()
@@ -140,6 +150,11 @@ func (o *WebScrapper) GetInAccessibleLinks(r *colly.Response, err error) {
 GetHeadings Increments the count for a tag when it is encountered
 */
 func (o *WebScrapper) GetHeadings(e *colly.HTMLElement) {
+	// do not execute for recursive requests
+	if !shouldExecuteHTMLCallBack(e) {
+		return
+	}
+
 	o.hedingMutex.Lock()
 	o.Heading[e.Name]++
 	o.hedingMutex.Unlock()
@@ -160,4 +175,12 @@ func (o *WebScrapper) SetLoginForm(e *colly.HTMLElement) {
 	if o.passwordInputCount == 1 {
 		o.HasLoginForm = true
 	}
+}
+
+/*
+shouldExecuteHTMLCallBack This function is checks the request depth
+As currently, only parent request scrapping is required and only data should be read on that page.
+*/
+func shouldExecuteHTMLCallBack(e *colly.HTMLElement) bool {
+	return e.Request.Depth == 1
 }
