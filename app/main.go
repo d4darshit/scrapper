@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	templates := template.Must(template.ParseFiles("../../index.html"))
+	templates := template.Must(template.ParseFiles("../index.html"))
 
 	var url string
 
@@ -29,6 +29,9 @@ func main() {
 			scrapper = service.New(url)
 			scrapper.Scrapper()
 			fmt.Println("url", url)
+		}
+		if scrapper == nil {
+			scrapper = &service.WebScrapper{}
 		}
 		//If errors show an internal server error message
 		if err := templates.ExecuteTemplate(w, "index.html", scrapper); err != nil {
